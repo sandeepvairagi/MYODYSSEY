@@ -32,7 +32,16 @@ export default function MyTripsPage() {
         <div className="space-y-6">
           {list.map((booking) => (
             <div key={booking._id} className="card p-6 flex flex-col md:flex-row gap-6">
-              <img src={getImageUrl(booking.destination)} alt="" className="w-full md:w-48 h-36 object-cover rounded-xl" />
+              <img
+                src={getImageUrl(booking.destination)}
+                alt=""
+                className="w-full md:w-48 h-36 object-cover rounded-xl"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800';
+                }}
+              />
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4">
                   <div>

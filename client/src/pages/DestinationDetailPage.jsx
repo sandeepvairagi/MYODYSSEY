@@ -55,7 +55,16 @@ export default function DestinationDetailPage() {
         <Swiper modules={[Navigation, Pagination]} navigation pagination className="h-full">
           {images.map((img, i) => (
             <SwiperSlide key={i}>
-              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <img
+                src={img.url}
+                alt=""
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800';
+                }}
+              />
             </SwiperSlide>
           ))}
         </Swiper>

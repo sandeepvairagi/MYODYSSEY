@@ -32,7 +32,16 @@ export default function HeroSection() {
           key={i}
           className={`absolute inset-0 transition-opacity duration-1000 ${i === slide ? 'opacity-100' : 'opacity-0'}`}
         >
-          <img src={img} alt="" className="w-full h-full object-cover" />
+          <img
+            src={img}
+            alt=""
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920';
+            }}
+          />
         </div>
       ))}
       <div className="absolute inset-0 bg-hero-pattern" />

@@ -172,7 +172,16 @@ export default function BookingPage() {
         </form>
 
         <div className="card p-6 h-fit sticky top-24">
-          <img src={getImageUrl(current)} alt="" className="w-full h-40 object-cover rounded-xl mb-4" />
+          <img
+            src={getImageUrl(current)}
+            alt=""
+            className="w-full h-40 object-cover rounded-xl mb-4"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800';
+            }}
+          />
           <h3 className="font-bold text-lg">{current.title}</h3>
           <p className="text-gray-500 text-sm">{current.location}, {current.country}</p>
           <hr className="my-4 border-gray-200 dark:border-gray-700" />

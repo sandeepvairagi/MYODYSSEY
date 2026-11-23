@@ -38,6 +38,11 @@ export default function DestinationCard({ destination, index = 0 }) {
             alt={destination.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800';
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           {destination.isTrending && (

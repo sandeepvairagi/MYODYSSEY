@@ -72,7 +72,16 @@ export default function AdminDestinations() {
       <div className="space-y-4">
         {destinations.map((d) => (
           <div key={d._id} className="card p-4 flex items-center gap-4">
-            <img src={getImageUrl(d)} alt="" className="w-20 h-16 object-cover rounded-lg" />
+            <img
+              src={getImageUrl(d)}
+              alt=""
+              className="w-20 h-16 object-cover rounded-lg"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800';
+              }}
+            />
             <div className="flex-1">
               <h3 className="font-semibold">{d.title}</h3>
               <p className="text-sm text-gray-500">{d.location} · {formatPrice(d.pricePerPerson)}</p>
