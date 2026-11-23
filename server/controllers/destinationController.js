@@ -14,10 +14,13 @@ const buildListQuery = (query) => {
     const regex = { $regex: query.keyword, $options: 'i' };
     q.$or = [{ title: regex }, { location: regex }, { country: regex }];
   }
-  if (query.category && query.category !== 'budget') {
+  if (query.category && query.category !== 'budget' && query.category !== 'all') {
     q.category = query.category;
   }
-  const maxPrice = query.maxPrice || query['pricePerPerson[lte]'];
+  let maxPrice = query.maxPrice || query['pricePerPerson[lte]'];
+  if (query.category === 'budget' && !maxPrice) {
+    maxPrice = 75000;
+  }
   if (maxPrice) {
     q.pricePerPerson = { $lte: Number(maxPrice) };
   }
@@ -26,27 +29,16 @@ const buildListQuery = (query) => {
 
 export const getDestinations = asyncHandler(async (req, res) => {
   const query = { ...req.query };
-  if (query.maxPrice) {
-    query['pricePerPerson[lte]'] = query.maxPrice;
-  }
-  if (query.category === 'budget') {
-    delete query.category;
-    if (!query['pricePerPerson[lte]'] && !query.maxPrice) {
-      query['pricePerPerson[lte]'] = '75000';
-    }
-  }
+  const filterQuery = buildListQuery(query);
 
-  const features = new APIFeatures(Destination.find({ isActive: true }), query)
-    .search()
-    .filter()
+  const features = new APIFeatures(Destination.find(filterQuery), query)
     .sort()
     .limitFields()
     .paginate();
 
   const destinations = await features.query.populate('createdBy', 'name');
 
-  const countQuery = buildListQuery(query);
-  const count = await Destination.countDocuments(countQuery);
+  const count = await Destination.countDocuments(filterQuery);
   const limit = parseInt(req.query.limit, 10) || 12;
   const page = parseInt(req.query.page, 10) || 1;
 
@@ -54,7 +46,7 @@ export const getDestinations = asyncHandler(async (req, res) => {
     success: true,
     count: destinations.length,
     total: count,
-    totalPages: Math.ceil(count / limit),
+    totalPages: Math.ceil(count / limit) || 1,
     currentPage: page,
     data: destinations,
   });
