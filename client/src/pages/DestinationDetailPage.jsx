@@ -73,7 +73,7 @@ export default function DestinationDetailPage() {
           <span className="px-3 py-1 bg-white/20 backdrop-blur text-white text-sm rounded-full capitalize">{current.category}</span>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mt-3">{current.title}</h1>
           <div className="flex items-center gap-4 mt-2 text-white/80">
-            <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {current.location}, {current.country}</span>
+            <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {current.location}{current.state ? `, ${current.state}` : ''}, {current.country}</span>
             <StarRating rating={current.rating} size="md" />
           </div>
         </div>

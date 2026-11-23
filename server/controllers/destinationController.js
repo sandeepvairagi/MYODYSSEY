@@ -12,7 +12,14 @@ const buildListQuery = (query) => {
   const q = { isActive: true };
   if (query.keyword) {
     const regex = { $regex: query.keyword, $options: 'i' };
-    q.$or = [{ title: regex }, { location: regex }, { country: regex }];
+    q.$or = [
+      { title: regex },
+      { location: regex },
+      { state: regex },
+      { country: regex },
+      { region: regex },
+      { tags: regex },
+    ];
   }
   if (query.category && query.category !== 'budget' && query.category !== 'all') {
     q.category = query.category;

@@ -7,6 +7,7 @@ const destinationSchema = new mongoose.Schema(
     description: { type: String, required: true },
     shortDescription: { type: String, maxlength: 200 },
     location: { type: String, required: true },
+    state: String,
     country: { type: String, required: true },
     region: String,
     category: {
@@ -49,7 +50,7 @@ const destinationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-destinationSchema.index({ title: 'text', location: 'text', country: 'text', description: 'text' });
+destinationSchema.index({ title: 'text', location: 'text', state: 'text', country: 'text', description: 'text' });
 destinationSchema.index({ category: 1, pricePerPerson: 1, rating: -1 });
 
 destinationSchema.pre('save', function (next) {

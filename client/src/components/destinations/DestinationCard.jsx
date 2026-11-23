@@ -64,7 +64,7 @@ export default function DestinationCard({ destination, index = 0 }) {
         <div className="p-5">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
             <MapPin className="w-4 h-4" />
-            <span>{destination.location}, {destination.country}</span>
+            <span>{destination.location}{destination.state ? `, ${destination.state}` : `, ${destination.country}`}</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
