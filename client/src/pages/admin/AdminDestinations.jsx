@@ -53,9 +53,16 @@ export default function AdminDestinations() {
       </div>
       {showForm && (
         <form onSubmit={handleCreate} className="card p-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {['title', 'location', 'country', 'category', 'pricePerPerson', 'duration'].map((field) => (
-            <input key={field} placeholder={field} value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })} className="input-field" required={field !== 'category'} />
-          ))}
+          <input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-field" required />
+          <input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="input-field" required />
+          <input placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="input-field" required />
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input-field capitalize">
+            {['beach', 'mountain', 'city', 'adventure', 'cultural', 'wildlife', 'luxury', 'budget'].map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+          <input type="number" min="0" placeholder="Price Per Person (₹)" value={form.pricePerPerson} onChange={(e) => setForm({ ...form, pricePerPerson: e.target.value })} className="input-field" required />
+          <input type="number" min="1" placeholder="Duration (days)" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="input-field" required />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input-field md:col-span-2 h-24" required />
           <input placeholder="Highlights (comma separated)" value={form.highlights} onChange={(e) => setForm({ ...form, highlights: e.target.value })} className="input-field" />
           <input placeholder="Included (comma separated)" value={form.included} onChange={(e) => setForm({ ...form, included: e.target.value })} className="input-field" />

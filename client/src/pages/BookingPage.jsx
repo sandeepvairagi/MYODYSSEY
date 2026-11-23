@@ -26,6 +26,7 @@ export default function BookingPage() {
     specialRequests: '',
   });
   const [estimate, setEstimate] = useState(null);
+  const [estimateLoading, setEstimateLoading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,14 +34,24 @@ export default function BookingPage() {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (current && form.startDate && form.endDate) {
-      bookingService.getEstimate({
+    if (!current || !form.startDate || !form.endDate) {
+      setEstimate(null);
+      return;
+    }
+    setEstimateLoading(true);
+    bookingService
+      .getEstimate({
         destinationId: current._id,
         travelers: form.travelers,
         startDate: form.startDate.toISOString(),
         endDate: form.endDate.toISOString(),
-      }).then((res) => setEstimate(res.data)).catch(() => {});
-    }
+      })
+      .then((res) => setEstimate(res.data))
+      .catch((err) => {
+        setEstimate(null);
+        toast.error(err.message || 'Could not calculate price');
+      })
+      .finally(() => setEstimateLoading(false));
   }, [current, form.startDate, form.endDate, form.travelers]);
 
   const handleSubmit = async (e) => {
@@ -66,37 +77,52 @@ export default function BookingPage() {
       }
 
       const booking = result.payload;
+
+      const confirmDemoBooking = async () => {
+        await paymentService.confirmDemo(booking._id);
+        toast.success('Trip confirmed! (Demo payment — no Razorpay keys required)');
+        navigate('/my-trips');
+      };
+
       const loaded = await loadRazorpay();
       if (!loaded) {
-        toast.success('Booking created! Payment gateway unavailable in demo mode.');
-        navigate('/my-trips');
+        await confirmDemoBooking();
         return;
       }
 
-      const orderRes = await paymentService.createOrder(booking._id);
-      const { order, key } = orderRes.data;
+      try {
+        const orderRes = await paymentService.createOrder(booking._id);
+        const { order, key } = orderRes.data;
 
-      const options = {
-        key: key || import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'My-Odyssey',
-        description: `Booking: ${current.title}`,
-        order_id: order.id,
-        handler: async (response) => {
-          await paymentService.verify({
-            ...response,
-            bookingId: booking._id,
-          });
-          toast.success('Payment successful! Trip confirmed.');
-          navigate('/my-trips');
-        },
-        prefill: { name: form.contactInfo.name, email: form.contactInfo.email },
-        theme: { color: '#0ea5e9' },
-      };
+        const options = {
+          key: key || import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'My-Odyssey',
+          description: `Booking: ${current.title}`,
+          order_id: order.id,
+          handler: async (response) => {
+            await paymentService.verify({
+              ...response,
+              bookingId: booking._id,
+            });
+            toast.success('Payment successful! Trip confirmed.');
+            navigate('/my-trips');
+          },
+          prefill: { name: form.contactInfo.name, email: form.contactInfo.email },
+          theme: { color: '#0ea5e9' },
+        };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (paymentErr) {
+        const msg = paymentErr.message?.toLowerCase() || '';
+        if (msg.includes('razorpay') || msg.includes('not configured')) {
+          await confirmDemoBooking();
+          return;
+        }
+        throw paymentErr;
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -131,7 +157,7 @@ export default function BookingPage() {
             <label className="block text-sm font-medium mb-2">Travelers</label>
             <div className="relative">
               <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input type="number" min="1" max={current.maxGroupSize} value={form.travelers} onChange={(e) => setForm({ ...form, travelers: parseInt(e.target.value, 10) })} className="input-field pl-10" />
+              <input type="number" min="1" max={current.maxGroupSize || 20} value={form.travelers} onChange={(e) => setForm({ ...form, travelers: parseInt(e.target.value, 10) || 1 })} className="input-field pl-10" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -153,11 +179,14 @@ export default function BookingPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>Price per person</span><span>{formatPrice(current.pricePerPerson)}</span></div>
             <div className="flex justify-between"><span>Travelers</span><span>{form.travelers}</span></div>
-            {estimate && (
-              <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Total</span>
-                <span className="text-brand-600">{formatPrice(estimate.totalPrice)}</span>
-              </div>
+            <div className="flex justify-between font-bold text-lg pt-2 border-t">
+              <span>Total</span>
+              <span className="text-brand-600">
+                {estimateLoading ? 'Calculating...' : estimate ? formatPrice(estimate.totalPrice) : '—'}
+              </span>
+            </div>
+            {!estimate && !estimateLoading && (
+              <p className="text-xs text-gray-500 mt-2">Select start and end dates to calculate your total price.</p>
             )}
           </div>
         </div>

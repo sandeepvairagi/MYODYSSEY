@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import asyncHandler from 'express-async-handler';
 import Destination from '../models/Destination.js';
 import Review from '../models/Review.js';
@@ -7,8 +8,35 @@ import { uploadToCloudinary } from '../services/cloudinaryService.js';
 import { getPersonalizedRecommendations } from '../services/recommendationService.js';
 import { generateItinerary } from '../services/itineraryService.js';
 
+const buildListQuery = (query) => {
+  const q = { isActive: true };
+  if (query.keyword) {
+    const regex = { $regex: query.keyword, $options: 'i' };
+    q.$or = [{ title: regex }, { location: regex }, { country: regex }];
+  }
+  if (query.category && query.category !== 'budget') {
+    q.category = query.category;
+  }
+  const maxPrice = query.maxPrice || query['pricePerPerson[lte]'];
+  if (maxPrice) {
+    q.pricePerPerson = { $lte: Number(maxPrice) };
+  }
+  return q;
+};
+
 export const getDestinations = asyncHandler(async (req, res) => {
-  const features = new APIFeatures(Destination.find({ isActive: true }), req.query)
+  const query = { ...req.query };
+  if (query.maxPrice) {
+    query['pricePerPerson[lte]'] = query.maxPrice;
+  }
+  if (query.category === 'budget') {
+    delete query.category;
+    if (!query['pricePerPerson[lte]'] && !query.maxPrice) {
+      query['pricePerPerson[lte]'] = '75000';
+    }
+  }
+
+  const features = new APIFeatures(Destination.find({ isActive: true }), query)
     .search()
     .filter()
     .sort()
@@ -17,13 +45,7 @@ export const getDestinations = asyncHandler(async (req, res) => {
 
   const destinations = await features.query.populate('createdBy', 'name');
 
-  let countQuery = { isActive: true };
-  if (req.query.keyword) {
-    const regex = { $regex: req.query.keyword, $options: 'i' };
-    countQuery = { isActive: true, $or: [{ title: regex }, { location: regex }, { country: regex }] };
-  }
-  if (req.query.category) countQuery.category = req.query.category;
-
+  const countQuery = buildListQuery(query);
   const count = await Destination.countDocuments(countQuery);
   const limit = parseInt(req.query.limit, 10) || 12;
   const page = parseInt(req.query.page, 10) || 1;
@@ -39,10 +61,12 @@ export const getDestinations = asyncHandler(async (req, res) => {
 });
 
 export const getDestination = asyncHandler(async (req, res) => {
-  const destination = await Destination.findOne({
-    $or: [{ _id: req.params.id }, { slug: req.params.id }],
-    isActive: true,
-  }).populate('createdBy', 'name avatar');
+  const isObjectId = mongoose.Types.ObjectId.isValid(req.params.id);
+  const query = isObjectId
+    ? { $or: [{ _id: req.params.id }, { slug: req.params.id }], isActive: true }
+    : { slug: req.params.id, isActive: true };
+
+  const destination = await Destination.findOne(query).populate('createdBy', 'name avatar');
 
   if (!destination) throw new ErrorResponse('Destination not found', 404);
 
@@ -138,7 +162,10 @@ export const deleteDestination = asyncHandler(async (req, res) => {
 });
 
 export const generateAIItinerary = asyncHandler(async (req, res) => {
-  const destination = await Destination.findById(req.params.id);
+  const isObjectId = mongoose.Types.ObjectId.isValid(req.params.id);
+  const destination = isObjectId
+    ? await Destination.findOne({ $or: [{ _id: req.params.id }, { slug: req.params.id }] })
+    : await Destination.findOne({ slug: req.params.id });
   if (!destination) throw new ErrorResponse('Destination not found', 404);
 
   const days = parseInt(req.body.days, 10) || destination.duration;

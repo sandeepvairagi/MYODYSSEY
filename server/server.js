@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -18,6 +20,8 @@ import adminRoutes from './routes/adminRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
 
 const app = express();
@@ -49,12 +53,36 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.resolve(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(clientDist, 'index.html'), (err) => {
+      if (err) next();
+    });
+  });
+}
+
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`My-Odyssey server running on port ${PORT}`));
+  const server = app.listen(PORT, () => {
+    console.log(`My-Odyssey server running on port ${PORT}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`API: http://localhost:${PORT}/api`);
+    }
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is in use. Set PORT in server/.env or stop the other process.`);
+    } else {
+      console.error(err.message);
+    }
+    process.exit(1);
+  });
 }).catch((err) => {
   console.error('MongoDB connection failed:', err.message);
   process.exit(1);

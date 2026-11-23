@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
+import { formatDate } from '../../utils/formatters';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -44,7 +45,7 @@ export default function AdminUsers() {
                     <option value="admin">admin</option>
                   </select>
                 </td>
-                <td className="p-4 text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="p-4 text-gray-500">{formatDate(u.createdAt)}</td>
               </tr>
             ))}
           </tbody>

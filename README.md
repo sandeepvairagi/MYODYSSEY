@@ -2,7 +2,7 @@
 
 A production-ready **MERN stack** travel platform for discovering destinations, booking trips, and managing travel experiences. Built with a modern, premium UI inspired by Airbnb and MakeMyTrip.
 
-![Tech Stack](https://img.shields.io/badge/React-18-blue) ![Node](https://img.shields.io/badge/Node-Express-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green)
+![Tech Stack](https://img.shields.io/badge/React-18-blue) ![React Router](https://img.shields.io/badge/React_Router-7-purple) ![Vite](https://img.shields.io/badge/Vite-6-yellow) ![Node](https://img.shields.io/badge/Node-Express-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green)
 
 ## Features
 
@@ -90,7 +90,9 @@ npm run dev
 ```
 
 - **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:5000/api
+- **Backend API:** http://localhost:5001/api
+
+> See **[SHOWCASE.md](./SHOWCASE.md)** for a step-by-step company demo script.
 
 ### Demo Credentials
 
@@ -104,7 +106,7 @@ npm run dev
 ### Server (`server/.env`)
 ```env
 NODE_ENV=development
-PORT=5000
+PORT=5001
 MONGO_URI=mongodb://127.0.0.1:27017/my-odyssey
 JWT_SECRET=your_secret
 CLIENT_URL=http://localhost:5173
@@ -119,7 +121,7 @@ OPENAI_API_KEY=
 
 ### Client (`client/.env`)
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5001/api
 VITE_RAZORPAY_KEY_ID=
 VITE_GOOGLE_MAPS_API_KEY=
 ```
@@ -155,7 +157,8 @@ VITE_GOOGLE_MAPS_API_KEY=
 npm run dev          # Run client + server
 npm run seed         # Seed database
 npm run build        # Build frontend
-npm start            # Production server
+npm start            # Production API server
+npm run showcase     # Seed + build + single-server demo (port 5001)
 ```
 
 ## License

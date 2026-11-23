@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Calendar, Wallet } from 'lucide-react';
+import { Search, MapPin, Calendar, Wallet, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -20,7 +20,7 @@ export default function HeroSection() {
     e.preventDefault();
     const params = new URLSearchParams();
     if (search.keyword) params.set('keyword', search.keyword);
-    if (search.budget) params.set('pricePerPerson[lte]', search.budget);
+    if (search.budget) params.set('maxPrice', search.budget);
     if (search.startDate) params.set('startDate', search.startDate.toISOString());
     navigate(`/explore?${params.toString()}`);
   };
@@ -72,16 +72,19 @@ export default function HeroSection() {
               />
             </div>
             <div className="relative">
-              <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+              <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10 pointer-events-none" />
               <select
                 value={search.budget}
                 onChange={(e) => setSearch({ ...search, budget: e.target.value })}
-                className="input-field pl-10 appearance-none"
+                className="input-field pl-10 pr-10 cursor-pointer appearance-none bg-white dark:bg-gray-900"
+                aria-label="Maximum price per person"
               >
                 <option value="">Any Budget</option>
-                <option value="30000">Under ₹30,000</option>
-                <option value="60000">Under ₹60,000</option>
+                <option value="50000">Under ₹50,000</option>
+                <option value="75000">Under ₹75,000</option>
                 <option value="100000">Under ₹1,00,000</option>
+                <option value="150000">Under ₹1,50,000</option>
                 <option value="200000">Under ₹2,00,000</option>
               </select>
             </div>

@@ -49,7 +49,10 @@ export default function LoginPage() {
           <p className="text-center text-sm text-gray-500">
             Don&apos;t have an account? <Link to="/register" className="text-brand-600 font-medium">Sign up</Link>
           </p>
-          <p className="text-center text-xs text-gray-400">Demo: user@myodyssey.com / user123</p>
+          <div className="text-center text-xs text-gray-400 space-y-1 pt-2 border-t border-gray-100 dark:border-gray-800">
+            <p>User demo: user@myodyssey.com / user123</p>
+            <p>Admin demo: admin@myodyssey.com / admin123</p>
+          </div>
         </form>
       </div>
     </div>

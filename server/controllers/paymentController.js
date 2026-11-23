@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import crypto from 'crypto';
-import { getRazorpay } from '../config/razorpay.js';
+import { getRazorpay, isRazorpayConfigured } from '../config/razorpay.js';
 import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
 import Notification from '../models/Notification.js';
@@ -88,4 +88,35 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   });
 
   res.json({ success: true, message: 'Payment verified', booking });
+});
+
+/** Demo / showcase: confirm booking without Razorpay when keys are not set */
+export const confirmDemoPayment = asyncHandler(async (req, res) => {
+  if (isRazorpayConfigured() && process.env.ALLOW_DEMO_PAYMENT !== 'true') {
+    throw new ErrorResponse('Razorpay is configured — use the payment gateway', 400);
+  }
+
+  const booking = await Booking.findById(req.body.bookingId).populate('destination', 'title images');
+  if (!booking) throw new ErrorResponse('Booking not found', 404);
+  if (booking.user.toString() !== req.user._id.toString()) {
+    throw new ErrorResponse('Not authorized', 403);
+  }
+  if (booking.paymentStatus === 'paid') {
+    throw new ErrorResponse('Booking already paid', 400);
+  }
+
+  booking.paymentStatus = 'paid';
+  booking.status = 'confirmed';
+  await booking.save();
+
+  await Notification.create({
+    user: req.user._id,
+    type: 'payment',
+    title: 'Booking Confirmed (Demo)',
+    message: `Your trip to ${booking.destination.title} is confirmed!`,
+    link: '/my-trips',
+    metadata: { bookingId: booking._id },
+  });
+
+  res.json({ success: true, message: 'Booking confirmed in demo mode', booking });
 });

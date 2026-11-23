@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Users, MapPin, Calendar, IndianRupee } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { formatPrice } from '../../utils/formatters';
@@ -10,7 +11,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     adminService.getStats()
       .then((res) => setData(res.data))
-      .catch(console.error)
+      .catch((err) => toast.error(err.message || 'Failed to load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -18,9 +19,9 @@ export default function AdminDashboard() {
 
   const { stats, recentBookings } = data || {};
   const cards = [
-    { label: 'Users', value: stats?.users, icon: Users, color: 'bg-blue-500' },
-    { label: 'Destinations', value: stats?.destinations, icon: MapPin, color: 'bg-green-500' },
-    { label: 'Bookings', value: stats?.bookings, icon: Calendar, color: 'bg-purple-500' },
+    { label: 'Users', value: stats?.users ?? 0, icon: Users, color: 'bg-blue-500' },
+    { label: 'Destinations', value: stats?.destinations ?? 0, icon: MapPin, color: 'bg-green-500' },
+    { label: 'Bookings', value: stats?.bookings ?? 0, icon: Calendar, color: 'bg-purple-500' },
     { label: 'Revenue', value: formatPrice(stats?.revenue || 0), icon: IndianRupee, color: 'bg-accent' },
   ];
 
@@ -56,15 +57,23 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {recentBookings?.map((b) => (
-                <tr key={b._id} className="border-b dark:border-gray-800">
-                  <td className="py-3 font-mono text-xs">{b.bookingReference}</td>
-                  <td className="py-3">{b.user?.name}</td>
-                  <td className="py-3">{b.destination?.title}</td>
-                  <td className="py-3 capitalize">{b.status}</td>
-                  <td className="py-3 font-semibold">{formatPrice(b.totalPrice)}</td>
+              {recentBookings && recentBookings.length > 0 ? (
+                recentBookings.map((b) => (
+                  <tr key={b._id} className="border-b dark:border-gray-800">
+                    <td className="py-3 font-mono text-xs">{b.bookingReference || b._id}</td>
+                    <td className="py-3">{b.user?.name || '—'}</td>
+                    <td className="py-3">{b.destination?.title || '—'}</td>
+                    <td className="py-3 capitalize">{b.status}</td>
+                    <td className="py-3 font-semibold">{formatPrice(b.totalPrice)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="py-6 text-center text-gray-500">
+                    No recent bookings
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

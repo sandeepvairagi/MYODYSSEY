@@ -37,22 +37,30 @@ export default function AdminBookings() {
             </tr>
           </thead>
           <tbody>
-            {bookings.map((b) => (
-              <tr key={b._id} className="border-t dark:border-gray-800">
-                <td className="p-4 font-mono text-xs">{b.bookingReference}</td>
-                <td className="p-4">{b.user?.name}</td>
-                <td className="p-4">{b.destination?.title}</td>
-                <td className="p-4">{formatDate(b.startDate)}</td>
-                <td className="p-4 font-semibold">{formatPrice(b.totalPrice)}</td>
-                <td className="p-4">
-                  <select value={b.status} onChange={(e) => updateStatus(b._id, e.target.value)} className="input-field py-1 text-sm">
-                    {['pending', 'confirmed', 'cancelled', 'completed'].map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+            {bookings.length > 0 ? (
+              bookings.map((b) => (
+                <tr key={b._id} className="border-t dark:border-gray-800">
+                  <td className="p-4 font-mono text-xs">{b.bookingReference || b._id}</td>
+                  <td className="p-4">{b.user?.name || '—'}</td>
+                  <td className="p-4">{b.destination?.title || '—'}</td>
+                  <td className="p-4">{formatDate(b.startDate)}</td>
+                  <td className="p-4 font-semibold">{formatPrice(b.totalPrice)}</td>
+                  <td className="p-4">
+                    <select value={b.status} onChange={(e) => updateStatus(b._id, e.target.value)} className="input-field py-1 text-sm">
+                      {['pending', 'confirmed', 'cancelled', 'completed'].map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="p-8 text-center text-gray-500">
+                  No bookings found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

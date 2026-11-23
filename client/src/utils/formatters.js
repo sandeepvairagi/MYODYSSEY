@@ -1,8 +1,11 @@
 export const formatPrice = (amount, currency = 'INR') =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 
-export const formatDate = (date) =>
-  new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+export const formatDate = (date) => {
+  if (!date) return '—';
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 export const truncate = (str, len = 100) =>
   str?.length > len ? `${str.substring(0, len)}...` : str;

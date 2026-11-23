@@ -140,15 +140,41 @@ export default function DestinationDetailPage() {
             {current.coordinates?.lat && (
               <div className="card p-8">
                 <h2 className="text-2xl font-bold mb-4">Location</h2>
-                <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                  <iframe
-                    title="map"
-                    className="w-full h-full rounded-xl"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${current.coordinates.lat},${current.coordinates.lng}&zoom=12`}
-                    allowFullScreen
-                    loading="lazy"
-                  />
+                <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
+                  {(() => {
+                    const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                    const hasGoogleKey = mapsKey && !mapsKey.startsWith('your_');
+                    const { lat, lng } = current.coordinates;
+                    if (hasGoogleKey) {
+                      return (
+                        <iframe
+                          title="map"
+                          className="w-full h-full"
+                          src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${lat},${lng}&zoom=12`}
+                          allowFullScreen
+                          loading="lazy"
+                        />
+                      );
+                    }
+                    const delta = 0.08;
+                    return (
+                      <iframe
+                        title="map"
+                        className="w-full h-full"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta}%2C${lat - delta}%2C${lng + delta}%2C${lat + delta}&layer=mapnik&marker=${lat}%2C${lng}`}
+                        loading="lazy"
+                      />
+                    );
+                  })()}
                 </div>
+                <a
+                  href={`https://www.google.com/maps?q=${current.coordinates.lat},${current.coordinates.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-3 text-sm text-brand-600 hover:underline"
+                >
+                  Open in Google Maps
+                </a>
               </div>
             )}
 
