@@ -34,7 +34,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: true,
     credentials: true,
   })
 );
@@ -92,3 +92,5 @@ connectDB().then(() => {
   console.error('MongoDB connection failed:', err.message);
   process.exit(1);
 });
+
+export default app;
